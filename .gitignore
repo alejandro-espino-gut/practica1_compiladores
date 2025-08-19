@@ -1,0 +1,11 @@
+# Ignoramos archivos compilados o binarios
+
+*.o
+*.class
+*.out
+*.jar
+
+
+# Ignoramos logs
+
+*.log
