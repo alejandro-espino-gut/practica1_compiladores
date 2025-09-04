@@ -1,7 +1,13 @@
 package com.compiler.lexer;
 
 import java.util.List;
+import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.Stack;
+import java.util.Queue;
+
 
 import com.compiler.lexer.dfa.DFA;
 import com.compiler.lexer.dfa.DfaState;
@@ -46,7 +52,50 @@ public class NfaToDfaConverter {
 		 3. Mark DFA states as final if any NFA state in their set is final
 		 4. Return DFA with start state and all DFA states
 		*/
-		throw new UnsupportedOperationException("Not implemented");
+		// throw new UnsupportedOperationException("Not implemented");
+		Set<State> startSet = new HashSet<>();
+    	startSet.add(nfa.getStartState());
+		Set<State> startClosure = epsilonClosure(startSet);
+
+		DfaState start = new DfaState(startClosure);
+
+		for (State state : startClosure) {
+			if (startClosure.contains(nfa.endState)) {
+				start.isFinal = true;
+				break;
+			}
+		}
+
+		List<DfaState> dfaStates = new ArrayList<>();
+    	Queue<DfaState> cola = new LinkedList<>();
+
+		dfaStates.add(start);
+    	cola.offer(start);
+
+		while(!cola.isEmpty()) {
+			DfaState actual = cola.poll();
+			for (Character symb : alphabet) {
+				Set<State> moveSet = move(actual.nfaStates, symb);
+				Set<State> closure = epsilonClosure(moveSet);
+
+				DfaState target = findDfaState(dfaStates, closure);
+				if (target == null) {
+					target = new DfaState(closure);
+
+					for (State state : closure) {
+						if (closure.contains(nfa.endState)) {
+							target.isFinal = true;
+							break;
+						}
+					}
+
+					dfaStates.add(target);
+					cola.offer(target);
+            	}
+				actual.transitions.put(symb, target);
+			}
+		}
+		return new DFA(start, dfaStates);
 	}
 
 	/**
@@ -65,7 +114,27 @@ public class NfaToDfaConverter {
 	 3. For each state, add all reachable states via epsilon transitions
 	 4. Return closure set
 	*/
-	throw new UnsupportedOperationException("Not implemented");
+		Set<State> eclosure= new HashSet<>(states);
+
+		Stack<State> pila = new Stack<>();
+
+		for (State estado : states){
+			pila.push(estado);
+		}
+
+		while (!pila.isEmpty()) {
+			State temp = pila.pop();
+
+			List<State> lista = temp.getEpsilonTransitions();
+
+			for (State toState : lista) {
+				if (eclosure.add(toState)) {
+					pila.push(toState);
+				}
+			}
+		}
+		return eclosure;
+	// throw new UnsupportedOperationException("Not implemented");
 	}
 
 	/**
@@ -84,7 +153,15 @@ public class NfaToDfaConverter {
 				  - Add destination state to result set
 		 2. Return result set
 		*/
-		throw new UnsupportedOperationException("Not implemented");
+		Set<State> result = new HashSet<>();
+		for (State state : states) {
+			List<State> toStates = state.getTransitions(symbol);
+			for (State toState : toStates) {
+				result.add(toState);
+			}
+		}
+		return result;
+		// throw new UnsupportedOperationException("Not implemented");
 	}
 
 	/**
@@ -102,6 +179,13 @@ public class NfaToDfaConverter {
 		    - If its NFA state set equals target set, return DFA state
 	    2. If not found, return null
 	   */
-	   throw new UnsupportedOperationException("Not implemented");
+
+	  //    throw new UnsupportedOperationException("Not implemented");
+	  	for (DfaState state : dfaStates) {
+			if (state.nfaStates.equals(targetNfaStates)) {
+				return state;
+			}
+		}
+		return null;
 	}
 }

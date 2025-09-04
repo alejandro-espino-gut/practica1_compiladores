@@ -2,6 +2,9 @@ package com.compiler.lexer;
 
 import com.compiler.lexer.dfa.DFA;
 
+import com.compiler.lexer.dfa.DfaState;
+ 
+
 /**
  * DfaSimulator
  * ------------
@@ -47,6 +50,18 @@ public class DfaSimulator {
             - If no transition exists, return false
         3. After processing all characters, return true if currentState is final
        */
-       throw new UnsupportedOperationException("Not implemented");
+    //    throw new UnsupportedOperationException("Not implemented");
+        DfaState currentState = dfa.startState;
+
+        for (char c : input.toCharArray()) {
+            DfaState nextState = currentState.getTransitions().get(c);
+
+            if (nextState == null) {
+                return false;
+            }
+            currentState = nextState;
+        }
+        return currentState.isFinal;
+
     }
 }
